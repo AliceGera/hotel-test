@@ -5,39 +5,46 @@ import 'package:flutter_template/features/app/di/app_scope.dart';
 import 'package:flutter_template/features/common/mixin/theme_mixin.dart';
 import 'package:flutter_template/features/common/utils/analytics/event/common/track_analytics_example.dart';
 import 'package:flutter_template/features/common/utils/analytics/service/analytics_service.dart';
-import 'package:flutter_template/features/dash/screen/dash_screen.dart';
-import 'package:flutter_template/features/dash/screen/dash_screen_model.dart';
+import 'package:flutter_template/features/navigation/service/router.dart';
+import 'package:flutter_template/features/room/screen/room_screen.dart';
+import 'package:flutter_template/features/room/screen/room_screen_model.dart';
 import 'package:flutter_template/l10n/app_localizations_x.dart';
 import 'package:provider/provider.dart';
 
-/// Factory for [DashScreenWidgetModel].
-DashScreenWidgetModel dashScreenWmFactory(
+/// Factory for [RoomScreenWidgetModel].
+RoomScreenWidgetModel roomScreenWmFactory(
   BuildContext context,
 ) {
   final scope = context.read<IAppScope>();
-  final model = DashScreenModel();
-
-  return DashScreenWidgetModel(
+  final model = RoomScreenModel();
+  final router = scope.router;
+  return RoomScreenWidgetModel(
     model: model,
     analyticsService: scope.analyticsService,
+    router,
   );
 }
 
-/// Widget model for [DashScreen].
-class DashScreenWidgetModel extends WidgetModel<DashScreen, DashScreenModel>
-    with ThemeWMMixin
-    implements IDashScreenWidgetModel {
+/// Widget model for [RoomScreen].
+class RoomScreenWidgetModel extends WidgetModel<RoomScreen, RoomScreenModel> with ThemeWMMixin implements IRoomScreenWidgetModel {
   final IAnalyticsService _analyticsService;
+  final AppRouter router;
 
   @override
   AppLocalizations get l10n => context.l10n;
 
-  /// Create an instance [DashScreenWidgetModel].
-  DashScreenWidgetModel({
-    required DashScreenModel model,
+  /// Create an instance [RoomScreenWidgetModel].
+  RoomScreenWidgetModel(
+    this.router, {
+    required RoomScreenModel model,
     required IAnalyticsService analyticsService,
   })  : _analyticsService = analyticsService,
         super(model);
+
+  @override
+  void closeScreen() {
+    router.pop();
+  }
 
   @override
   void trackAnalyticsExample() {
@@ -45,10 +52,13 @@ class DashScreenWidgetModel extends WidgetModel<DashScreen, DashScreenModel>
   }
 }
 
-/// Interface of [IDashScreenWidgetModel].
-abstract class IDashScreenWidgetModel extends IWidgetModel with ThemeIModelMixin {
+/// Interface of [IRoomScreenWidgetModel].
+abstract class IRoomScreenWidgetModel extends IWidgetModel with ThemeIModelMixin {
   /// Localization strings.
   AppLocalizations get l10n;
+
+  /// Method to close the debug screens.
+  void closeScreen() {}
 
   /// Sending an analytics event
   void trackAnalyticsExample();

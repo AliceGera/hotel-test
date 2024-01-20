@@ -13,9 +13,13 @@ import 'package:flutter_template/features/navigation/domain/entity/app_route_nam
 @RoutePage(
   name: AppRouteNames.hotelScreen,
 )
+
+
 class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
   /// Create an instance [HotelScreen].
-  const HotelScreen({
+
+
+   HotelScreen({
     Key? key,
     WidgetModelFactory wmFactory = initScreenWidgetModelFactory,
   }) : super(wmFactory, key: key);
@@ -33,25 +37,143 @@ class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: _Body(openNextScreen: wm.openNextScreen),
+    );
+  }
+}
+
+class _Body extends StatelessWidget {
+  final VoidCallback openNextScreen;
+
+  const _Body({
+    required this.openNextScreen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _HotelWidget(),
+          const SizedBox(height: 8),
+          _DetailInformationAboutHotelWidget(),
+          const SizedBox(height: 8),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: AppButtonWidget(
+                title: 'К выбору номера',
+                onPressed: openNextScreen,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailInformationAboutHotelWidget extends StatelessWidget {
+  List<String> infoAboutHotelList = [
+    '3-я линия',
+    'Платный Wi-Fi в фойе',
+    '30 км до аэропорта',
+    '1 км до пляжа',
+  ];
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _HotelWidget(),
-            const SizedBox(height: 8),
-            _DetailInformationAboutHotelWidget(),
-            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 21),
+              child: Text(
+                'Об отеле',
+                style: AppTextStyle.medium22.value.copyWith(color: AppColors.black),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Wrap(
+                runSpacing: 8,
+                children: [
+                  ...infoAboutHotelList.map(
+                        (e) => DecoratedBox(
+                      decoration: BoxDecoration(color: AppColors.lightGray, borderRadius: BorderRadius.circular(5)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: Text(e, style: AppTextStyle.medium16.value.copyWith(color: AppColors.gray)),
+                      ),
+                    ),
+                  )
+
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                'Отель VIP-класса с собственными гольф полями. Высокий уровнь сервиса. Рекомендуем для респектабельного отдыха. Отель принимает гостей от 18 лет!',
+                style: AppTextStyle.regular16.value.copyWith(color: AppColors.black),
+              ),
+            ),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: AppColors.backgroundColor,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: AppButtonWidget(
-                  title: 'К выбору номера',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(8),
+                  itemCount: 3,
+                  itemBuilder: (context, index) {
+                    return Row(
+                      children: [
+                        SvgPicture.asset(SvgIcons.iconFacilities),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Удобства', style: AppTextStyle.medium16.value),
+                                      const SizedBox(height: 2),
+                                      Text('Самое необходимое', style: AppTextStyle.medium14.value.copyWith(color: AppColors.gray)),
+                                    ],
+                                  ),
+                                  SvgPicture.asset(SvgIcons.iconArrow),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Container(height: 1, color: AppColors.gray.withOpacity(.15)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            )
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -141,86 +263,6 @@ class _HotelWidget extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailInformationAboutHotelWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 21),
-              child: Text(
-                'Об отеле',
-                style: AppTextStyle.medium22.value.copyWith(color: AppColors.black),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                'Отель VIP-класса с собственными гольф полями. Высокий уровнь сервиса. Рекомендуем для респектабельного отдыха. Отель принимает гостей от 18 лет!',
-                style: AppTextStyle.regular16.value.copyWith(color: AppColors.black),
-              ),
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppColors.backgroundColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(8),
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return Row(
-                      children: [
-                        SvgPicture.asset(SvgIcons.iconFacilities),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Удобства', style: AppTextStyle.medium16.value),
-                                      const SizedBox(height: 2),
-                                      Text('Самое необходимое', style: AppTextStyle.medium14.value.copyWith(color: AppColors.gray)),
-                                    ],
-                                  ),
-                                  SvgPicture.asset(SvgIcons.iconArrow),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Container(height: 1, color: AppColors.gray.withOpacity(.15)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
           ],
         ),
       ),

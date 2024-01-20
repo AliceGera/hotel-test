@@ -9,18 +9,6 @@ abstract class AppRoutePaths {
   /// Path to hotel screen.
   static const String hotelPath = '/hotel';
 
-  /// Path to debug screen.
-  static const String debugPath = 'debug';
-
-  /// Path to ui kit screen.
-  static const String uiKitPath = '/ui_kit';
-
-  /// Path to hotel screen.
-  static const String dashPath = 'dash';
-
-  /// Path to info screen.
-  static const String infoPath = 'info';
-
-  /// Path to logs history screen.
-  static const String logHistory = '/logHistory';
+  /// Path to room screen.
+  static const String roomPath = '/room';
 }

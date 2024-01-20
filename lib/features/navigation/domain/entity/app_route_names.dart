@@ -9,18 +9,6 @@ abstract class AppRouteNames {
   /// HotelScreen route name.
   static const String hotelScreen = 'hotelRouter';
 
-  /// TempScreen route name.
-  static const String uiKitScreen = 'uiKitRouter';
-
-  /// DebugScreen route name.
-  static const String debugScreen = 'debugRouter';
-
-  /// DashScreen route name.
-  static const String dashScreen = 'dashRouter';
-
-  /// InfoScreen route name.
-  static const String infoScreen = 'infoRouter';
-
-  /// LogHistoryScreen route name.
-  static const String logHistoryScreen = 'logHistoryRouter';
+  /// RoomScreen route name.
+  static const String roomScreen = 'roomRouter';
 }
