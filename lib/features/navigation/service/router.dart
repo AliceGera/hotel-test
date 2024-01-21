@@ -1,12 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_template/features/hotel/screens/hotel_screen/hotel_screen_export.dart';
-import 'package:flutter_template/features/navigation/domain/entity/hotel/hotel_routes.dart';
-import 'package:flutter_template/features/navigation/domain/entity/room/room_routes.dart';
-import 'package:flutter_template/features/room/screen/room_screen_export.dart';
 import 'package:flutter_template/features/booking/screen/booking_screen_export.dart';
+import 'package:flutter_template/features/hotel/screens/hotel_screen/hotel_screen_export.dart';
 import 'package:flutter_template/features/navigation/domain/entity/booking/booking_routes.dart';
+import 'package:flutter_template/features/navigation/domain/entity/hotel/hotel_routes.dart';
+import 'package:flutter_template/features/navigation/domain/entity/paid/paid_routes.dart';
+import 'package:flutter_template/features/navigation/domain/entity/room/room_routes.dart';
+import 'package:flutter_template/features/paid/screen/paid_screen_export.dart';
+import 'package:flutter_template/features/room/screen/room_screen_export.dart';
 
 part 'router.gr.dart';
 
@@ -26,11 +28,9 @@ class AppRouter extends _$AppRouter {
   @override
   List<AutoRoute> get routes => [
         hotelRoutes,
-        /*logHistoryRoutes,
-        uiKitRoutes,*/
-    //dashRoutes,
         roomRoutes,
         bookingRoutes,
+        paidRoutes,
       ];
 
   AppRouter._();

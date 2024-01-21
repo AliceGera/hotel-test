@@ -11,5 +11,7 @@ class SvgIcons {
   static const String iconCloseTourist = 'assets/icons/Icon_close_tourist.svg';
   static const String iconOpenTourist = 'assets/icons/icon_open_tourist.svg';
   static const String iconAddTourist ='assets/icons/icon_add_tourist.svg';
+  static const String iconPaid ='assets/icons/paid.svg';
+
   static const List<String> values = [testSvg];
 }

@@ -14,4 +14,7 @@ abstract class AppRoutePaths {
 
   /// Path to booking screen.
   static const String bookingPath = '/booking';
+
+  /// Path to paid screen.
+  static const String paidPath = '/paid';
 }

@@ -320,6 +320,14 @@ class _TextFieldWidget extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(12)),
               borderSide: BorderSide(color: AppColors.red, width: 0),
             ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: const BorderSide(width: 0, color: AppColors.gray),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: const BorderSide(width: 0, color: AppColors.gray),
+              borderRadius: BorderRadius.circular(10),
+            ),
             fillColor: AppColors.backgroundColor,
             filled: true,
             labelText: text,

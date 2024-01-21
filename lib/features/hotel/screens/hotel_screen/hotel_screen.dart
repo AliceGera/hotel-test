@@ -13,13 +13,10 @@ import 'package:flutter_template/features/navigation/domain/entity/app_route_nam
 @RoutePage(
   name: AppRouteNames.hotelScreen,
 )
-
-
 class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
   /// Create an instance [HotelScreen].
 
-
-   HotelScreen({
+  const HotelScreen({
     Key? key,
     WidgetModelFactory wmFactory = initScreenWidgetModelFactory,
   }) : super(wmFactory, key: key);
@@ -29,12 +26,10 @@ class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.white,
         title: Center(
-          child: Text(
-            'Отель',
-            style: AppTextStyle.medium18.value.copyWith(color: AppColors.black),
-          ),
+          child: Text('Отель', style: AppTextStyle.medium18.value.copyWith(color: AppColors.black)),
         ),
       ),
       body: _Body(openNextScreen: wm.openNextScreen),
@@ -84,6 +79,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
     '30 км до аэропорта',
     '1 км до пляжа',
   ];
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -109,7 +105,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   ...infoAboutHotelList.map(
-                        (e) => DecoratedBox(
+                    (e) => DecoratedBox(
                       decoration: BoxDecoration(color: AppColors.lightGray, borderRadius: BorderRadius.circular(5)),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -117,7 +113,6 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                       ),
                     ),
                   )
-
                 ],
               ),
             ),

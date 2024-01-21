@@ -36,7 +36,7 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, IBookingScreen
 
   @override
   void openNextScreen() {
-    _appRouter.push(RoomRouter());
+    _appRouter.push(PaidRouter());
   }
 
   @override

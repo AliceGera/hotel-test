@@ -15,7 +15,7 @@ import 'package:flutter_template/features/room/screen/room_screen_wm.dart';
 )
 class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
   /// Create an instance [RoomScreen].
-  RoomScreen({
+  const RoomScreen({
     Key? key,
     WidgetModelFactory wmFactory = roomScreenWmFactory,
   }) : super(wmFactory, key: key);

@@ -14,4 +14,7 @@ abstract class AppRouteNames {
 
   /// BookingScreen route name.
   static const String bookingScreen = 'bookingRouter';
+
+  /// PaidScreen route name.
+  static const String paidScreen = 'paidRouter';
 }
