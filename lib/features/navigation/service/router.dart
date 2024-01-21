@@ -5,6 +5,8 @@ import 'package:flutter_template/features/hotel/screens/hotel_screen/hotel_scree
 import 'package:flutter_template/features/navigation/domain/entity/hotel/hotel_routes.dart';
 import 'package:flutter_template/features/navigation/domain/entity/room/room_routes.dart';
 import 'package:flutter_template/features/room/screen/room_screen_export.dart';
+import 'package:flutter_template/features/booking/screen/booking_screen_export.dart';
+import 'package:flutter_template/features/navigation/domain/entity/booking/booking_routes.dart';
 
 part 'router.gr.dart';
 
@@ -28,6 +30,7 @@ class AppRouter extends _$AppRouter {
         uiKitRoutes,*/
     //dashRoutes,
         roomRoutes,
+        bookingRoutes,
       ];
 
   AppRouter._();

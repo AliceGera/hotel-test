@@ -50,6 +50,11 @@ class RoomScreenWidgetModel extends WidgetModel<RoomScreen, RoomScreenModel> wit
   void trackAnalyticsExample() {
     _analyticsService.trackEvent(const TrackAnalyticsExampleEvent());
   }
+
+  @override
+  void openNextScreen() {
+    router.push(BookingRouter());
+  }
 }
 
 /// Interface of [IRoomScreenWidgetModel].
@@ -57,9 +62,12 @@ abstract class IRoomScreenWidgetModel extends IWidgetModel with ThemeIModelMixin
   /// Localization strings.
   AppLocalizations get l10n;
 
-  /// Method to close the debug screens.
+  /// Method to close the room screens.
   void closeScreen() {}
 
   /// Sending an analytics event
   void trackAnalyticsExample();
+
+  /// Navigate to booking screen.
+  void openNextScreen();
 }

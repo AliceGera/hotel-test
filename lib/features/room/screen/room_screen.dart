@@ -13,11 +13,9 @@ import 'package:flutter_template/features/room/screen/room_screen_wm.dart';
 @RoutePage(
   name: AppRouteNames.roomScreen,
 )
-
-
 class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
   /// Create an instance [RoomScreen].
-   RoomScreen({
+  RoomScreen({
     Key? key,
     WidgetModelFactory wmFactory = roomScreenWmFactory,
   }) : super(wmFactory, key: key);
@@ -32,21 +30,24 @@ class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
         title: Row(
           children: [
             InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,onTap: wm.closeScreen, child: SvgPicture.asset(SvgIcons.iconBackArrow)),
+                splashColor: Colors.transparent, highlightColor: Colors.transparent, onTap: wm.closeScreen, child: SvgPicture.asset(SvgIcons.iconBackArrow)),
             const Spacer(),
             Text('Steigenberger Makadi', style: AppTextStyle.medium18.value.copyWith(color: AppColors.black)),
             const Spacer(),
           ],
         ),
       ),
-      body: const _Body(),
+      body: _Body(openNextScreen: wm.openNextScreen),
     );
   }
 }
 
 class _Body extends StatelessWidget {
-  const _Body();
+  final VoidCallback openNextScreen;
+
+  const _Body({
+    required this.openNextScreen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +60,7 @@ class _Body extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: 3,
             itemBuilder: (context, index) {
-              return _RoomWidget();
+              return _RoomWidget(openNextScreen: openNextScreen);
             },
             separatorBuilder: (context, index) {
               return const SizedBox(height: 8);
@@ -73,10 +74,17 @@ class _Body extends StatelessWidget {
 
 class _RoomWidget extends StatelessWidget {
   final controller = PageController();
+  final VoidCallback openNextScreen;
+
+  _RoomWidget({
+    required this.openNextScreen,
+  });
+
   List<String> infoAboutRoomList = [
     'Все включено',
     'Кондиционер',
   ];
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -162,9 +170,9 @@ class _RoomWidget extends StatelessWidget {
                 ],
               ),
             ),
-            const AppButtonWidget(
+            AppButtonWidget(
               title: 'Выбрать номер',
-              //onPressed: openNextScreen,
+              onPressed: openNextScreen,
             ),
           ],
         ),

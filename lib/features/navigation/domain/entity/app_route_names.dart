@@ -11,4 +11,7 @@ abstract class AppRouteNames {
 
   /// RoomScreen route name.
   static const String roomScreen = 'roomRouter';
+
+  /// BookingScreen route name.
+  static const String bookingScreen = 'bookingRouter';
 }
