@@ -7,10 +7,13 @@ import 'package:flutter_template/assets/colors/app_colors.dart';
 import 'package:flutter_template/assets/res/resources.dart';
 import 'package:flutter_template/assets/text/text_style.dart';
 import 'package:flutter_template/features/booking/screen/booking_screen_widget_model.dart';
+import 'package:flutter_template/features/common/domain/data/booking/booking_data.dart';
 import 'package:flutter_template/features/common/extension/string_extension.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_raiting_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:union_state/union_state.dart';
 
 /// Initialization screens (this can be a HomeScreen or SplashScreen for example).
 @RoutePage(
@@ -41,88 +44,92 @@ class BookingScreen extends ElementaryWidget<BookingScreenWidgetModel> {
           ],
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen),
+      body: _Body(openNextScreen: wm.openNextScreen, bookingState: wm.BookingState),
     );
   }
 }
 
 class _Body extends StatelessWidget {
   final VoidCallback openNextScreen;
+  final UnionStateNotifier<Booking> bookingState;
 
   const _Body({
     required this.openNextScreen,
+    required this.bookingState,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          _HotelWidget(),
-          const SizedBox(height: 8),
-          _BookingInformationWidget(),
-          const SizedBox(height: 8),
-          _BuyerInformationWidget(),
-          const SizedBox(height: 8),
-          _AddTourist(),
-          const SizedBox(height: 8),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return UnionStateListenableBuilder<Booking>(
+        unionStateListenable: bookingState,
+        builder: (_, booking) {
+          return SingleChildScrollView(
+            child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  child: Text(
-                    'Добавить туриста',
-                    style: AppTextStyle.medium22.value,
+                const SizedBox(height: 8),
+                _HotelWidget(booking: booking),
+                const SizedBox(height: 8),
+                _BookingInformationWidget(booking: booking),
+                const SizedBox(height: 8),
+                _BuyerInformationWidget(),
+                const SizedBox(height: 8),
+                _AddTourist(),
+                const SizedBox(height: 8),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        child: Text(
+                          'Добавить туриста',
+                          style: AppTextStyle.medium22.value,
+                        ),
+                      ),
+                      InkWell(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: SvgPicture.asset(SvgIcons.iconAddTourist),
+                        ),
+                      )
+                    ],
                   ),
                 ),
-                InkWell(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SvgPicture.asset(SvgIcons.iconAddTourist),
+                const SizedBox(height: 8),
+                _FinalPayment(booking: booking),
+                const SizedBox(height: 8),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: AppButtonWidget(
+                      title: 'Оплатить ${(booking.tourPrice + booking.fuelCharge + booking.serviceCharge).toString().spaceSeparateNumbers()}  ₽',
+                      onPressed: openNextScreen,
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-          const SizedBox(height: 8),
-          _FinalPayment(),
-          const SizedBox(height: 8),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: AppButtonWidget(
-                title: 'Оплатить ${3} ₽',
-                onPressed: openNextScreen,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+          );
+        },
+        loadingBuilder: (_, booking) => SizedBox(),
+        failureBuilder: (_, booking, rooms) => SizedBox());
   }
 }
 
 class _BookingInformationWidget extends StatelessWidget {
-  List<String> bookingInformationList = [
-    'Вылет из',
-    'Страна, город',
-    'Даты',
-    'Кол-во ночей',
-    'Отель',
-    'Номер',
-    'Питание',
-  ];
+  final Booking booking;
+
+  const _BookingInformationWidget({
+    required this.booking,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -131,18 +138,18 @@ class _BookingInformationWidget extends StatelessWidget {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _InformationWidget(firstText: 'Вылет из', secondText: 'FFF'),
-            _InformationWidget(firstText: 'Страна, город', secondText: 'FFF'),
-            _InformationWidget(firstText: 'Даты', secondText: 'FFF'),
-            _InformationWidget(firstText: 'Кол-во ночей', secondText: 'FFF'),
-            _InformationWidget(firstText: 'Отель', secondText: 'FFF'),
-            _InformationWidget(firstText: 'Номер', secondText: 'FFF'),
-            _InformationWidget(firstText: 'Питание', secondText: 'FFF'),
+            _InformationWidget(firstText: 'Вылет из', secondText: booking.departure),
+            _InformationWidget(firstText: 'Страна, город', secondText: booking.arrivalCountry),
+            _InformationWidget(firstText: 'Даты', secondText: '${booking.tourDateStart} - ${booking.tourDateStop}'),
+            _InformationWidget(firstText: 'Кол-во ночей', secondText: booking.numberNights.toString()),
+            _InformationWidget(firstText: 'Отель', secondText: booking.hotelName),
+            _InformationWidget(firstText: 'Номер', secondText: booking.room),
+            _InformationWidget(firstText: 'Питание', secondText: booking.nutrition),
           ],
         ),
       ),
@@ -151,6 +158,12 @@ class _BookingInformationWidget extends StatelessWidget {
 }
 
 class _HotelWidget extends StatelessWidget {
+  final Booking booking;
+
+  _HotelWidget({
+    required this.booking,
+  });
+
   final controller = PageController();
 
   @override
@@ -168,37 +181,16 @@ class _HotelWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.orange.withOpacity(.2),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                        child: Text(
-                          '5 Превосходно',
-                          style: AppTextStyle.medium16.value.copyWith(color: AppColors.orange),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
+            AppRatingWidget(rating: booking.horating, ratingName: booking.ratingName),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Steigenberger Makadi',
+                booking.hotelName,
                 style: AppTextStyle.medium22.value.copyWith(color: AppColors.black),
               ),
             ),
             Text(
-              'Madinat Makadi, Safaga Road, Makadi Bay, Египет',
+              booking.hotelAdress,
               style: AppTextStyle.medium14.value.copyWith(color: AppColors.blue),
             ),
           ],
@@ -349,6 +341,11 @@ class _FinalPayment extends StatelessWidget {
     'Сервисный сбор',
     'К оплате',
   ];
+  final Booking booking;
+
+  _FinalPayment({
+    required this.booking,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -357,15 +354,15 @@ class _FinalPayment extends StatelessWidget {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Padding(
+      child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _PriceWidget(text: 'Тур', textPrice: '${3} ₽'),
-            _PriceWidget(text: 'Топливный сбор', textPrice: '${8} ₽'),
-            _PriceWidget(text: 'Сервисный сбор', textPrice: '${1} ₽'),
-            _PriceWidget(text: 'К оплате', textPrice: '${3 + 4 + 5} ₽', color: AppColors.blue),
+            _PriceWidget(text: 'Тур', textPrice: '${booking.tourPrice} ₽'),
+            _PriceWidget(text: 'Топливный сбор', textPrice: '${booking.fuelCharge} ₽'),
+            _PriceWidget(text: 'Сервисный сбор', textPrice: '${booking.serviceCharge} ₽'),
+            _PriceWidget(text: 'К оплате', textPrice: '${booking.tourPrice + booking.fuelCharge + booking.serviceCharge} ₽', color: AppColors.blue),
           ],
         ),
       ),

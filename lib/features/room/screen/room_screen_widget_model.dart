@@ -10,13 +10,15 @@ import 'package:flutter_template/features/room/screen/room_screen.dart';
 import 'package:flutter_template/features/room/screen/room_screen_model.dart';
 import 'package:flutter_template/l10n/app_localizations_x.dart';
 import 'package:provider/provider.dart';
+import 'package:union_state/union_state.dart';
+import 'package:flutter_template/features/common/domain/data/rooms/rooms_data.dart';
 
 /// Factory for [RoomScreenWidgetModel].
 RoomScreenWidgetModel roomScreenWmFactory(
   BuildContext context,
 ) {
   final scope = context.read<IAppScope>();
-  final model = RoomScreenModel();
+  final model = RoomScreenModel(scope.roomsService);
   final router = scope.router;
   return RoomScreenWidgetModel(
     model: model,
@@ -41,6 +43,16 @@ class RoomScreenWidgetModel extends WidgetModel<RoomScreen, RoomScreenModel> wit
   })  : _analyticsService = analyticsService,
         super(model);
 
+  final _roomsState = UnionStateNotifier<Rooms>(Rooms.init());
+
+  late final Rooms rooms;
+
+  @override
+  void initWidgetModel() {
+    _getRooms();
+    super.initWidgetModel();
+  }
+
   @override
   void closeScreen() {
     router.pop();
@@ -55,6 +67,19 @@ class RoomScreenWidgetModel extends WidgetModel<RoomScreen, RoomScreenModel> wit
   void openNextScreen() {
     router.push(BookingRouter());
   }
+
+  Future<void> _getRooms() async {
+    _roomsState.loading();
+    try {
+      rooms = (await model.getRooms())!;
+      _roomsState.content(rooms);
+    } catch (_) {
+      _roomsState.failure();
+    }
+  }
+
+  @override
+  UnionStateNotifier<Rooms> get RoomsState => _roomsState;
 }
 
 /// Interface of [IRoomScreenWidgetModel].
@@ -70,4 +95,6 @@ abstract class IRoomScreenWidgetModel extends IWidgetModel with ThemeIModelMixin
 
   /// Navigate to booking screen.
   void openNextScreen();
+
+  UnionStateNotifier<Rooms> get RoomsState;
 }

@@ -5,9 +5,15 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_template/assets/colors/app_colors.dart';
 import 'package:flutter_template/assets/res/resources.dart';
 import 'package:flutter_template/assets/text/text_style.dart';
+import 'package:flutter_template/features/common/domain/data/hotel/hotel_data.dart';
+import 'package:flutter_template/features/common/extension/string_extension.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_gallery_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_raiting_widget.dart';
 import 'package:flutter_template/features/hotel/screens/hotel_screen/hotel_screen_widget_model.dart';
+import 'package:flutter_template/features/hotel/screens/hotel_screen/widgets/hotel_loading_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
+import 'package:union_state/union_state.dart';
 
 /// Initialization screens (this can be a HomeScreen or SplashScreen for example).
 @RoutePage(
@@ -32,53 +38,61 @@ class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
           child: Text('Отель', style: AppTextStyle.medium18.value.copyWith(color: AppColors.black)),
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen),
+      body: _Body(openNextScreen: wm.openNextScreen, hotelState: wm.HotelState),
     );
   }
 }
 
 class _Body extends StatelessWidget {
   final VoidCallback openNextScreen;
+  final UnionStateNotifier<Hotel> hotelState;
 
   const _Body({
     required this.openNextScreen,
+    required this.hotelState,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _HotelWidget(),
-          const SizedBox(height: 8),
-          _DetailInformationAboutHotelWidget(),
-          const SizedBox(height: 8),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
+    return UnionStateListenableBuilder<Hotel>(
+        unionStateListenable: hotelState,
+        builder: (_, hotel) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _HotelWidget(hotel: hotel),
+                const SizedBox(height: 8),
+                _DetailInformationAboutHotelWidget(description: hotel.description, peculiarities: hotel.peculiarities),
+                const SizedBox(height: 8),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: AppButtonWidget(
+                      title: 'К выбору номера',
+                      onPressed: openNextScreen,
+                    ),
+                  ),
+                )
+              ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: AppButtonWidget(
-                title: 'К выбору номера',
-                onPressed: openNextScreen,
-              ),
-            ),
-          )
-        ],
-      ),
-    );
+          );
+        },
+        loadingBuilder: (_, hotel) => const LoadingHotelWidget(),
+        failureBuilder: (_, exception, hotel) => _AppErrorWidget());
   }
 }
 
 class _DetailInformationAboutHotelWidget extends StatelessWidget {
-  List<String> infoAboutHotelList = [
-    '3-я линия',
-    'Платный Wi-Fi в фойе',
-    '30 км до аэропорта',
-    '1 км до пляжа',
-  ];
+  final String description;
+  final List<String> peculiarities;
+  List<String> aboutHotel = ['Удобства', 'Что включено', 'Что не включено'];
+  List<String> aboutHotelIcons = [SvgIcons.iconFacilities, SvgIcons.iconHotelInclude, SvgIcons.iconHotelUninclude];
+
+  _DetailInformationAboutHotelWidget({required this.description, required this.peculiarities});
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +118,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
               child: Wrap(
                 runSpacing: 8,
                 children: [
-                  ...infoAboutHotelList.map(
+                  ...peculiarities.map(
                     (e) => DecoratedBox(
                       decoration: BoxDecoration(color: AppColors.lightGray, borderRadius: BorderRadius.circular(5)),
                       child: Padding(
@@ -119,7 +133,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'Отель VIP-класса с собственными гольф полями. Высокий уровнь сервиса. Рекомендуем для респектабельного отдыха. Отель принимает гостей от 18 лет!',
+                description,
                 style: AppTextStyle.regular16.value.copyWith(color: AppColors.black),
               ),
             ),
@@ -129,7 +143,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                 child: ListView.builder(
                   shrinkWrap: true,
                   padding: const EdgeInsets.all(8),
@@ -137,7 +151,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return Row(
                       children: [
-                        SvgPicture.asset(SvgIcons.iconFacilities),
+                        SvgPicture.asset(aboutHotelIcons[index]),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -149,7 +163,8 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Удобства', style: AppTextStyle.medium16.value),
+                                      const SizedBox(height: 10),
+                                      Text(aboutHotel[index], style: AppTextStyle.medium16.value),
                                       const SizedBox(height: 2),
                                       Text('Самое необходимое', style: AppTextStyle.medium14.value.copyWith(color: AppColors.gray)),
                                     ],
@@ -158,7 +173,7 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              Container(height: 1, color: AppColors.gray.withOpacity(.15)),
+                              if (index != 2) Container(height: 1, color: AppColors.gray.withOpacity(.15)),
                             ],
                           ),
                         ),
@@ -177,6 +192,10 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
 }
 
 class _HotelWidget extends StatelessWidget {
+  final Hotel hotel;
+
+  _HotelWidget({required this.hotel});
+
   final controller = PageController();
 
   @override
@@ -196,51 +215,20 @@ class _HotelWidget extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: SizedBox(
-                height: 260,
-                child: PageView(
-                  controller: controller,
-                  children: <Widget>[
-                    Image.asset('assets/images/hotel.png'),
-                    Image.asset('assets/images/hotel.png'),
-                    Image.asset('assets/images/hotel.png'),
-                  ],
-                ),
-              ),
+              child: AppGalleryWidget(imageUrls: hotel.imageUrls,),
             ),
-            Row(
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.orange.withOpacity(.2),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                        child: Text(
-                          '5 Превосходно',
-                          style: AppTextStyle.medium16.value.copyWith(color: AppColors.orange),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
+            AppRatingWidget(rating:hotel.rating,ratingName:hotel.ratingName),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Steigenberger Makadi',
+                hotel.name,
                 style: AppTextStyle.medium22.value.copyWith(color: AppColors.black),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'Madinat Makadi, Safaga Road, Makadi Bay, Египет',
+                hotel.adress,
                 style: AppTextStyle.medium14.value.copyWith(color: AppColors.blue),
               ),
             ),
@@ -249,18 +237,25 @@ class _HotelWidget extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    'от 134 673 ₽',
-                    style: AppTextStyle.semiBold30.value.copyWith(color: AppColors.black),
-                  ),
+                  Text('от ${hotel.minimalPrice.toString().spaceSeparateNumbers()} ₽', style: AppTextStyle.semiBold30.value.copyWith(color: AppColors.black)),
                   const SizedBox(width: 8),
-                  Text('за тур с перелётом', style: AppTextStyle.regular16.value.copyWith(color: AppColors.gray)),
+                  Text(hotel.priceForIt, style: AppTextStyle.regular16.value.copyWith(color: AppColors.gray)),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _AppErrorWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.backgroundColor,
+      body: SizedBox(),
     );
   }
 }

@@ -2,7 +2,16 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_template/api/service/booking_api.dart';
+import 'package:flutter_template/api/service/hotel_api.dart';
+import 'package:flutter_template/api/service/rooms_api.dart';
 import 'package:flutter_template/config/environment/environment.dart';
+import 'package:flutter_template/features/common/domain/repository/booking_repository.dart';
+import 'package:flutter_template/features/common/domain/repository/hotel_repository.dart';
+import 'package:flutter_template/features/common/domain/repository/rooms_repository.dart';
+import 'package:flutter_template/features/common/service/booking_service.dart';
+import 'package:flutter_template/features/common/service/hotel_service.dart';
+import 'package:flutter_template/features/common/service/rooms_service.dart';
 import 'package:flutter_template/features/common/service/theme/theme_service.dart';
 import 'package:flutter_template/features/common/service/theme/theme_service_impl.dart';
 import 'package:flutter_template/features/common/utils/analytics/amplitude/amplitude_analytic_tracker.dart';
@@ -28,6 +37,15 @@ class AppScope implements IAppScope {
   late final AppRouter _router;
   late final IThemeService _themeService;
   late final IAnalyticsService _analyticsService;
+  late final HotelService _hotelService;
+  late final HotelRepository _hotelRepository;
+  late final HotelApi _hotelApi;
+  late final RoomsService _roomsService;
+  late final RoomsRepository _roomsRepository;
+  late final RoomsApi _roomsApi;
+  late final BookingService _bookingService;
+  late final BookingRepository _bookingRepository;
+  late final BookingApi _bookingApi;
 
   @override
   late VoidCallback applicationRebuilder;
@@ -50,6 +68,15 @@ class AppScope implements IAppScope {
   @override
   IAnalyticsService get analyticsService => _analyticsService;
 
+  @override
+  HotelService get hotelService => _hotelService;
+
+  @override
+  RoomsService get roomsService => _roomsService;
+
+  @override
+  BookingService get bookingService => _bookingService;
+
   late IThemeModeStorage _themeModeStorage;
 
   /// Create an instance [AppScope].
@@ -66,6 +93,12 @@ class AppScope implements IAppScope {
       FirebaseAnalyticTracker(MockFirebaseAnalytics()),
       AmplitudeAnalyticTracker(MockAmplitudeAnalytics()),
     ]);
+    _hotelApi = HotelApi(dio);
+    _hotelService = _initHotelService();
+    _roomsApi = RoomsApi(dio);
+    _roomsService = _initRoomsService();
+    _bookingApi = BookingApi(dio);
+    _bookingService = _initBookingService();
   }
 
   @override
@@ -113,6 +146,21 @@ class AppScope implements IAppScope {
   Future<void> _onThemeModeChanged() async {
     await _themeModeStorage.saveThemeMode(mode: _themeService.currentThemeMode);
   }
+
+  HotelService _initHotelService() {
+    _hotelRepository = HotelRepository(_hotelApi);
+    return HotelService(_hotelRepository);
+  }
+
+  RoomsService _initRoomsService() {
+    _roomsRepository = RoomsRepository(_roomsApi);
+    return RoomsService(_roomsRepository);
+  }
+
+  BookingService _initBookingService() {
+    _bookingRepository = BookingRepository(_bookingApi);
+    return BookingService(_bookingRepository);
+  }
 }
 
 /// App dependencies.
@@ -140,4 +188,13 @@ abstract class IAppScope {
 
   /// Analytics sending service
   IAnalyticsService get analyticsService;
+
+  /// Analytics sending hotel
+  HotelService get hotelService;
+
+  /// Analytics sending rooms
+  RoomsService get roomsService;
+
+  /// Analytics sending booking
+  BookingService get bookingService;
 }

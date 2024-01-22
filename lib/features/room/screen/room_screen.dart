@@ -5,9 +5,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_template/assets/colors/app_colors.dart';
 import 'package:flutter_template/assets/res/resources.dart';
 import 'package:flutter_template/assets/text/text_style.dart';
+import 'package:flutter_template/features/common/domain/data/rooms/room_data.dart';
+import 'package:flutter_template/features/common/domain/data/rooms/rooms_data.dart';
+import 'package:flutter_template/features/common/extension/string_extension.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_gallery_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
-import 'package:flutter_template/features/room/screen/room_screen_wm.dart';
+import 'package:flutter_template/features/room/screen/room_screen_widget_model.dart';
+import 'package:union_state/union_state.dart';
 
 /// Main widget for RoomScreen feature.
 @RoutePage(
@@ -37,53 +42,57 @@ class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
           ],
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen),
+      body: _Body(openNextScreen: wm.openNextScreen, roomsState: wm.RoomsState),
     );
   }
 }
 
 class _Body extends StatelessWidget {
   final VoidCallback openNextScreen;
+  final UnionStateNotifier<Rooms> roomsState;
 
   const _Body({
     required this.openNextScreen,
+    required this.roomsState,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 3,
-            itemBuilder: (context, index) {
-              return _RoomWidget(openNextScreen: openNextScreen);
-            },
-            separatorBuilder: (context, index) {
-              return const SizedBox(height: 8);
-            },
-          ),
-        ],
-      ),
-    );
+    return UnionStateListenableBuilder<Rooms>(
+        unionStateListenable: roomsState,
+        builder: (_, rooms) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: rooms.rooms.length,
+                  itemBuilder: (context, index) {
+                    return _RoomWidget(openNextScreen: openNextScreen, room: rooms.rooms[index]);
+                  },
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(height: 8);
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+        loadingBuilder: (_, rooms) => SizedBox(),
+        failureBuilder: (_, exception, rooms) => SizedBox());
   }
 }
 
 class _RoomWidget extends StatelessWidget {
-  final controller = PageController();
   final VoidCallback openNextScreen;
+  final Room room;
 
-  _RoomWidget({
+  const _RoomWidget({
     required this.openNextScreen,
+    required this.room,
   });
-
-  List<String> infoAboutRoomList = [
-    'Все включено',
-    'Кондиционер',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -94,21 +103,11 @@ class _RoomWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 260,
-              child: PageView(
-                controller: controller,
-                children: <Widget>[
-                  Image.asset('assets/images/hotel.png'),
-                  Image.asset('assets/images/hotel.png'),
-                  Image.asset('assets/images/hotel.png'),
-                ],
-              ),
-            ),
+            AppGalleryWidget(imageUrls: room.imageUrls),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Стандартный с видом на бассейн или сад',
+                room.name,
                 style: AppTextStyle.medium22.value.copyWith(color: AppColors.black),
               ),
             ),
@@ -118,7 +117,7 @@ class _RoomWidget extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ...infoAboutRoomList.map(
+                  ...room.peculiarities.map(
                     (e) => DecoratedBox(
                       decoration: BoxDecoration(color: AppColors.lightGray, borderRadius: BorderRadius.circular(5)),
                       child: Padding(
@@ -162,11 +161,11 @@ class _RoomWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '186 600 ₽',
+                    '${room.price.toString().spaceSeparateNumbers()} ₽',
                     style: AppTextStyle.semiBold30.value.copyWith(color: AppColors.black),
                   ),
                   const SizedBox(width: 8),
-                  Text('за тур с перелётом', style: AppTextStyle.regular16.value.copyWith(color: AppColors.gray)),
+                  Text(room.pricePer, style: AppTextStyle.regular16.value.copyWith(color: AppColors.gray)),
                 ],
               ),
             ),

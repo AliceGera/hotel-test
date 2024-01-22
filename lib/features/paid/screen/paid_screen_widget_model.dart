@@ -26,7 +26,6 @@ PaidScreenWidgetModel paidScreenWmFactory(
 
 /// Widget model for [PaidScreen].
 class PaidScreenWidgetModel extends WidgetModel<PaidScreen, PaidScreenModel> with ThemeWMMixin implements IPaidScreenWidgetModel {
-  final IAnalyticsService _analyticsService;
   final AppRouter router;
 
   @override
@@ -37,8 +36,7 @@ class PaidScreenWidgetModel extends WidgetModel<PaidScreen, PaidScreenModel> wit
     this.router, {
     required PaidScreenModel model,
     required IAnalyticsService analyticsService,
-  })  : _analyticsService = analyticsService,
-        super(model);
+  })  : super(model);
 
   @override
   void closeScreen() {

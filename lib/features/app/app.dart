@@ -35,8 +35,8 @@ class _AppState extends State<App> {
     final environment = Environment.instance();
     if (!environment.isRelease) {
       environment
-        ..refreshConfigProxy(configStorage)
-        ..createLogHistoryStrategy();
+        ..refreshConfigProxy(configStorage);
+
     }
   }
 

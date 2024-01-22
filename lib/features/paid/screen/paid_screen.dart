@@ -7,7 +7,7 @@ import 'package:flutter_template/assets/res/resources.dart';
 import 'package:flutter_template/assets/text/text_style.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
-import 'package:flutter_template/features/paid/screen/paid_screen_wm.dart';
+import 'package:flutter_template/features/paid/screen/paid_screen_widget_model.dart';
 
 /// Main widget for PaidScreen feature.
 @RoutePage(
