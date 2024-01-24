@@ -42,7 +42,7 @@ class HotelScreenWidgetModel extends WidgetModel<HotelScreen, HotelScreenModel> 
 
   @override
   void openNextScreen() {
-    _appRouter.push(RoomRouter());
+    _appRouter.push(RoomRouter(hotelName: hotel.name));
   }
 
   Future<void> _getHotel() async {
@@ -57,6 +57,11 @@ class HotelScreenWidgetModel extends WidgetModel<HotelScreen, HotelScreenModel> 
   }
 
   @override
+  void loadAgain() {
+    _getHotel();
+  }
+
+  @override
   UnionStateNotifier<Hotel> get HotelState => _hotelState;
 }
 
@@ -64,6 +69,9 @@ class HotelScreenWidgetModel extends WidgetModel<HotelScreen, HotelScreenModel> 
 abstract class IHotelWidgetModel extends IWidgetModel with ThemeIModelMixin {
   /// Navigate to room screen.
   void openNextScreen();
+
+  /// Method to load again hotel screen.
+  void loadAgain(){}
 
   UnionStateNotifier<Hotel> get HotelState;
 }

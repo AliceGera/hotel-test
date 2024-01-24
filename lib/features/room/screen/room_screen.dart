@@ -9,9 +9,11 @@ import 'package:flutter_template/features/common/domain/data/rooms/room_data.dar
 import 'package:flutter_template/features/common/domain/data/rooms/rooms_data.dart';
 import 'package:flutter_template/features/common/extension/string_extension.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_error_widget.dart';
 import 'package:flutter_template/features/common/widgets/app_gallery_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
 import 'package:flutter_template/features/room/screen/room_screen_widget_model.dart';
+import 'package:flutter_template/features/room/screen/widgets/room_loading_widget.dart';
 import 'package:union_state/union_state.dart';
 
 /// Main widget for RoomScreen feature.
@@ -20,7 +22,10 @@ import 'package:union_state/union_state.dart';
 )
 class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
   /// Create an instance [RoomScreen].
-  const RoomScreen({
+  final String hotelName;
+
+  const RoomScreen(
+    this.hotelName, {
     Key? key,
     WidgetModelFactory wmFactory = roomScreenWmFactory,
   }) : super(wmFactory, key: key);
@@ -36,13 +41,25 @@ class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
           children: [
             InkWell(
                 splashColor: Colors.transparent, highlightColor: Colors.transparent, onTap: wm.closeScreen, child: SvgPicture.asset(SvgIcons.iconBackArrow)),
-            const Spacer(),
-            Text('Steigenberger Makadi', style: AppTextStyle.medium18.value.copyWith(color: AppColors.black)),
-            const Spacer(),
+            Flexible(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 15),
+                  child: Text(
+                    hotelName,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: AppTextStyle.medium18.value.copyWith(
+                      color: AppColors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen, roomsState: wm.RoomsState),
+      body: _Body(openNextScreen: wm.openNextScreen, roomsState: wm.RoomsState, loadAgain: wm.loadAgain),
     );
   }
 }
@@ -50,10 +67,12 @@ class RoomScreen extends ElementaryWidget<IRoomScreenWidgetModel> {
 class _Body extends StatelessWidget {
   final VoidCallback openNextScreen;
   final UnionStateNotifier<Rooms> roomsState;
+  final VoidCallback loadAgain;
 
   const _Body({
     required this.openNextScreen,
     required this.roomsState,
+    required this.loadAgain,
   });
 
   @override
@@ -80,8 +99,8 @@ class _Body extends StatelessWidget {
             ),
           );
         },
-        loadingBuilder: (_, rooms) => SizedBox(),
-        failureBuilder: (_, exception, rooms) => SizedBox());
+        loadingBuilder: (_, rooms) => const LoadingRoomWidget(),
+        failureBuilder: (_, exception, rooms) => AppErrorWidget(onPressed: loadAgain));
   }
 }
 

@@ -8,8 +8,9 @@ import 'package:flutter_template/assets/text/text_style.dart';
 import 'package:flutter_template/features/common/domain/data/hotel/hotel_data.dart';
 import 'package:flutter_template/features/common/extension/string_extension.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_error_widget.dart';
 import 'package:flutter_template/features/common/widgets/app_gallery_widget.dart';
-import 'package:flutter_template/features/common/widgets/app_raiting_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_rating_widget.dart';
 import 'package:flutter_template/features/hotel/screens/hotel_screen/hotel_screen_widget_model.dart';
 import 'package:flutter_template/features/hotel/screens/hotel_screen/widgets/hotel_loading_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
@@ -38,7 +39,7 @@ class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
           child: Text('Отель', style: AppTextStyle.medium18.value.copyWith(color: AppColors.black)),
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen, hotelState: wm.HotelState),
+      body: _Body(openNextScreen: wm.openNextScreen, hotelState: wm.HotelState, loadAgain: wm.loadAgain),
     );
   }
 }
@@ -46,10 +47,12 @@ class HotelScreen extends ElementaryWidget<HotelScreenWidgetModel> {
 class _Body extends StatelessWidget {
   final VoidCallback openNextScreen;
   final UnionStateNotifier<Hotel> hotelState;
+  final VoidCallback loadAgain;
 
   const _Body({
     required this.openNextScreen,
     required this.hotelState,
+    required this.loadAgain,
   });
 
   @override
@@ -82,7 +85,8 @@ class _Body extends StatelessWidget {
           );
         },
         loadingBuilder: (_, hotel) => const LoadingHotelWidget(),
-        failureBuilder: (_, exception, hotel) => _AppErrorWidget());
+        failureBuilder: (_, exception, hotel) => AppErrorWidget(onPressed: loadAgain),
+    );
   }
 }
 
@@ -119,13 +123,14 @@ class _DetailInformationAboutHotelWidget extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   ...peculiarities.map(
-                    (e) => DecoratedBox(
-                      decoration: BoxDecoration(color: AppColors.lightGray, borderRadius: BorderRadius.circular(5)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        child: Text(e, style: AppTextStyle.medium16.value.copyWith(color: AppColors.gray)),
-                      ),
-                    ),
+                        (e) =>
+                        DecoratedBox(
+                          decoration: BoxDecoration(color: AppColors.lightGray, borderRadius: BorderRadius.circular(5)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            child: Text(e, style: AppTextStyle.medium16.value.copyWith(color: AppColors.gray)),
+                          ),
+                        ),
                   )
                 ],
               ),
@@ -217,7 +222,7 @@ class _HotelWidget extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: AppGalleryWidget(imageUrls: hotel.imageUrls,),
             ),
-            AppRatingWidget(rating:hotel.rating,ratingName:hotel.ratingName),
+            AppRatingWidget(rating: hotel.rating, ratingName: hotel.ratingName),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
@@ -250,12 +255,3 @@ class _HotelWidget extends StatelessWidget {
   }
 }
 
-class _AppErrorWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      body: SizedBox(),
-    );
-  }
-}

@@ -6,11 +6,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_template/assets/colors/app_colors.dart';
 import 'package:flutter_template/assets/res/resources.dart';
 import 'package:flutter_template/assets/text/text_style.dart';
+import 'package:flutter_template/features/booking/screen/booking_screen_model.dart';
 import 'package:flutter_template/features/booking/screen/booking_screen_widget_model.dart';
+import 'package:flutter_template/features/booking/screen/widgets/booking_loading_widget.dart';
 import 'package:flutter_template/features/common/domain/data/booking/booking_data.dart';
 import 'package:flutter_template/features/common/extension/string_extension.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
-import 'package:flutter_template/features/common/widgets/app_raiting_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_error_widget.dart';
+import 'package:flutter_template/features/common/widgets/app_rating_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:union_state/union_state.dart';
@@ -44,7 +47,7 @@ class BookingScreen extends ElementaryWidget<BookingScreenWidgetModel> {
           ],
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen, bookingState: wm.BookingState),
+      body: _Body(openNextScreen: wm.openNextScreen, bookingState: wm.bookingState, loadAgain: wm.loadAgain, wm: wm),
     );
   }
 }
@@ -52,10 +55,14 @@ class BookingScreen extends ElementaryWidget<BookingScreenWidgetModel> {
 class _Body extends StatelessWidget {
   final VoidCallback openNextScreen;
   final UnionStateNotifier<Booking> bookingState;
+  final VoidCallback loadAgain;
+  final BookingScreenWidgetModel wm;
 
   const _Body({
     required this.openNextScreen,
     required this.bookingState,
+    required this.loadAgain,
+    required this.wm,
   });
 
   @override
@@ -73,54 +80,15 @@ class _Body extends StatelessWidget {
                 const SizedBox(height: 8),
                 _BuyerInformationWidget(),
                 const SizedBox(height: 8),
-                _AddTourist(),
+                _AddTourist(wm: wm),
                 const SizedBox(height: 8),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        child: Text(
-                          'Добавить туриста',
-                          style: AppTextStyle.medium22.value,
-                        ),
-                      ),
-                      InkWell(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: SvgPicture.asset(SvgIcons.iconAddTourist),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _FinalPayment(booking: booking),
-                const SizedBox(height: 8),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    child: AppButtonWidget(
-                      title: 'Оплатить ${(booking.tourPrice + booking.fuelCharge + booking.serviceCharge).toString().spaceSeparateNumbers()}  ₽',
-                      onPressed: openNextScreen,
-                    ),
-                  ),
-                ),
+                _FinalPayment(wm: wm),
               ],
             ),
           );
         },
-        loadingBuilder: (_, booking) => SizedBox(),
-        failureBuilder: (_, booking, rooms) => SizedBox());
+        loadingBuilder: (_, booking) => const BookingWidget(),
+        failureBuilder: (_, booking, rooms) => AppErrorWidget(onPressed: loadAgain));
   }
 }
 
@@ -273,7 +241,7 @@ class _BuyerInformationWidget extends StatelessWidget {
               ),
               _TextFieldWidget(text: '+7 (***) ***-**-**', input: [mask]),
               const SizedBox(height: 8),
-              const _TextFieldWidget(text: 'examplemail.000@mail.ru'),
+               _TextFieldWidget(text: 'examplemail.000@mail.ru'),
               const SizedBox(height: 8),
               Text(
                 'Эти данные никому не передаются. После оплаты мы вышли чек на указанный вами номер и почту',
@@ -288,84 +256,247 @@ class _BuyerInformationWidget extends StatelessWidget {
 }
 
 class _TextFieldWidget extends StatelessWidget {
-  const _TextFieldWidget({
+   const _TextFieldWidget({
     required this.text,
     this.input = const <TextInputFormatter>[],
   });
 
   final String text;
   final List<TextInputFormatter> input;
-
   @override
   Widget build(BuildContext context) {
     return Form(
-      //key: textFieldKey,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
         ),
-        child: TextFormField(
-          inputFormatters: input,
-          decoration: InputDecoration(
-            errorStyle: const TextStyle(color: AppColors.red),
-            errorBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: AppColors.red, width: 0),
+        child: Column(
+          children: [
+            TextFormField(
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+              inputFormatters: input,
+              decoration: InputDecoration(
+                errorStyle: const TextStyle(color: AppColors.red),
+                errorBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(color: AppColors.red, width: 0),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: const BorderSide(width: 0, color: AppColors.gray),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: const BorderSide(width: 0, color: AppColors.gray),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                fillColor: AppColors.backgroundColor,
+                filled: true,
+                labelText: text,
+                labelStyle: const TextStyle(color: AppColors.gray),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                alignLabelWithHint: true,
+              ),
             ),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: const BorderSide(width: 0, color: AppColors.gray),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: const BorderSide(width: 0, color: AppColors.gray),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            fillColor: AppColors.backgroundColor,
-            filled: true,
-            labelText: text,
-            labelStyle: const TextStyle(color: AppColors.gray),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            alignLabelWithHint: true,
-          ),
+          ],
         ),
       ),
     );
   }
 }
+///function to convert index
+String touristNumberFunction(String touristNumber) {
+  switch (touristNumber) {
+    case '0':
+      touristNumber = 'Первый';
+    case '1':
+      touristNumber = 'Второй';
+    case '2':
+      touristNumber = 'Третий';
+    case '3':
+      touristNumber = 'Четвертый';
+    case '4':
+      touristNumber = 'Пятый';
+    case '5':
+      touristNumber = 'Шестой';
+    case '6':
+      touristNumber = 'Седьмой';
+    case '7':
+      touristNumber = 'Восьмой';
+    case '8':
+      touristNumber = 'Девятый';
+    case '9':
+      touristNumber = 'Десятый';
+  }
+  return touristNumber;
+}
+
+class _AddTourist extends StatelessWidget {
+  final BookingScreenWidgetModel wm;
+
+  _AddTourist({required this.wm});
+
+  bool isOpenCustomArrow = false;
+  String touristNumber = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<List<Tourist>>(
+      builder: (context, tourists, child) {
+        return Column(
+          children: [
+            ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: tourists.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  touristNumber = touristNumberFunction(index.toString());
+                  return ExpansionTile(
+                    trailing: (tourists[index].isExpandTouristCard ? SvgPicture.asset(SvgIcons.iconCloseTourist) : SvgPicture.asset(SvgIcons.iconOpenTourist)),
+                    onExpansionChanged: (expanded) {
+                      wm.changeTouristCard(index);
+                    },
+                    maintainState: tourists[index].isExpandTouristCard,
+                    backgroundColor: AppColors.white,
+                    collapsedBackgroundColor: AppColors.white,
+                    textColor: AppColors.black,
+                    childrenPadding: EdgeInsets.zero,
+                    collapsedShape: const ContinuousRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    title: Text('$touristNumber турист', style: AppTextStyle.medium22.value),
+                    children:  <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: _TextFieldWidget(text: 'Имя'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: _TextFieldWidget(text: 'Фамилия'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: _TextFieldWidget(text: 'Дата рождения'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: _TextFieldWidget(text: 'Гражданство'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: _TextFieldWidget(text: 'Номер загранпаспорта'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: _TextFieldWidget(text: 'Срок действия загранпаспорта'),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  return Container(
+                    height: 8,
+                    //color: Styles.productRowDivider, // Custom style
+                  );
+                }),
+            const SizedBox(height: 8),
+            if (tourists.length < 10) ...[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: Text(
+                        'Добавить туриста',
+                        style: AppTextStyle.medium22.value,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        wm.addTourist(tourists.length);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SvgPicture.asset(SvgIcons.iconAddTourist),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ] else ...[
+              Text('Можно добавить не больше 10-ти туристов', style: AppTextStyle.regular14.value),
+            ],
+          ],
+        );
+      },
+      valueListenable: wm.touristsState,
+    );
+  }
+}
 
 class _FinalPayment extends StatelessWidget {
-  List<String> bookingInformationList = [
-    'Тур',
-    'Топливный сбор',
-    'Сервисный сбор',
-    'К оплате',
-  ];
-  final Booking booking;
+  final BookingScreenWidgetModel wm;
 
-  _FinalPayment({
-    required this.booking,
+  const _FinalPayment({
+    required this.wm,
   });
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return ValueListenableBuilder<List<Tourist>>(
+      builder: (context, tourists, child) {
+        return Column(
           children: [
-            _PriceWidget(text: 'Тур', textPrice: '${booking.tourPrice} ₽'),
-            _PriceWidget(text: 'Топливный сбор', textPrice: '${booking.fuelCharge} ₽'),
-            _PriceWidget(text: 'Сервисный сбор', textPrice: '${booking.serviceCharge} ₽'),
-            _PriceWidget(text: 'К оплате', textPrice: '${booking.tourPrice + booking.fuelCharge + booking.serviceCharge} ₽', color: AppColors.blue),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _PriceWidget(text: 'Тур', textPrice: '${wm.booking.tourPrice} * ${tourists.length} ₽'),
+                    _PriceWidget(text: 'Топливный сбор', textPrice: '${wm.booking.fuelCharge} * ${tourists.length} ₽'),
+                    _PriceWidget(text: 'Сервисный сбор', textPrice: '${wm.booking.serviceCharge} * ${tourists.length} ₽'),
+                    _PriceWidget(
+                        text: 'К оплате',
+                        textPrice: '${(wm.booking.tourPrice + wm.booking.fuelCharge + wm.booking.serviceCharge) * tourists.length} ₽',
+                        color: AppColors.blue),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: AppButtonWidget(
+                  title:
+                  'Оплатить ${((wm.booking.tourPrice + wm.booking.fuelCharge + wm.booking.serviceCharge) * tourists.length).toString().spaceSeparateNumbers()}  ₽',
+                  onPressed: wm.openNextScreen,
+                ),
+              ),
+            ),
           ],
-        ),
-      ),
+        );
+      },
+      valueListenable: wm.touristsState,
     );
   }
 }
@@ -386,61 +517,6 @@ class _PriceWidget extends StatelessWidget {
         children: [
           Text(text, style: AppTextStyle.regular16.value.copyWith(color: AppColors.gray)),
           Text(textPrice.spaceSeparateNumbers(), style: AppTextStyle.regular16.value),
-        ],
-      ),
-    );
-  }
-}
-
-class _AddTourist extends StatelessWidget {
-  _AddTourist();
-
-  bool isOpenCustomArrow = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ExpansionTile(
-            trailing: (isOpenCustomArrow ? SvgPicture.asset(SvgIcons.iconOpenTourist) : SvgPicture.asset(SvgIcons.iconCloseTourist)),
-            collapsedTextColor: AppColors.black,
-            backgroundColor: AppColors.white,
-            textColor: AppColors.black,
-            title: Text('Первый турист', style: AppTextStyle.medium22.value),
-            children: const <Widget>[
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: _TextFieldWidget(text: 'Имя'),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: _TextFieldWidget(text: 'Фамилия'),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: _TextFieldWidget(text: 'Дата рождения'),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: _TextFieldWidget(text: 'Гражданство'),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: _TextFieldWidget(text: 'Номер загранпаспорта'),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: _TextFieldWidget(text: 'Срок действия загранпаспорта'),
-              ),
-              SizedBox(height: 12),
-            ],
-          ),
         ],
       ),
     );

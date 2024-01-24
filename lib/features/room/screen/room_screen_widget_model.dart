@@ -73,9 +73,15 @@ class RoomScreenWidgetModel extends WidgetModel<RoomScreen, RoomScreenModel> wit
     try {
       rooms = (await model.getRooms())!;
       _roomsState.content(rooms);
+      await Future.delayed( const Duration(milliseconds: 100));
     } catch (_) {
       _roomsState.failure();
     }
+  }
+
+  @override
+  void loadAgain() {
+    _getRooms();
   }
 
   @override
@@ -95,6 +101,9 @@ abstract class IRoomScreenWidgetModel extends IWidgetModel with ThemeIModelMixin
 
   /// Navigate to booking screen.
   void openNextScreen();
+
+  /// Method to load again room screen.
+  void loadAgain(){}
 
   UnionStateNotifier<Rooms> get RoomsState;
 }
