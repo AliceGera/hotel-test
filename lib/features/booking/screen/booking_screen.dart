@@ -47,19 +47,17 @@ class BookingScreen extends ElementaryWidget<BookingScreenWidgetModel> {
           ],
         ),
       ),
-      body: _Body(openNextScreen: wm.openNextScreen, bookingState: wm.bookingState, loadAgain: wm.loadAgain, wm: wm),
+      body: _Body(bookingState: wm.bookingState, loadAgain: wm.loadAgain, wm: wm),
     );
   }
 }
 
 class _Body extends StatelessWidget {
-  final VoidCallback openNextScreen;
   final UnionStateNotifier<Booking> bookingState;
   final VoidCallback loadAgain;
   final BookingScreenWidgetModel wm;
 
   const _Body({
-    required this.openNextScreen,
     required this.bookingState,
     required this.loadAgain,
     required this.wm,
@@ -239,9 +237,9 @@ class _BuyerInformationWidget extends StatelessWidget {
                   style: AppTextStyle.medium22.value,
                 ),
               ),
-              _TextFieldWidget(text: '+7 (***) ***-**-**', input: [mask]),
+              //_TextFieldWidget(text: '+7 (***) ***-**-**', input: [mask]),
               const SizedBox(height: 8),
-               _TextFieldWidget(text: 'examplemail.000@mail.ru'),
+              // _TextFieldWidget(text: 'examplemail.000@mail.ru'),
               const SizedBox(height: 8),
               Text(
                 'Эти данные никому не передаются. После оплаты мы вышли чек на указанный вами номер и почту',
@@ -255,17 +253,26 @@ class _BuyerInformationWidget extends StatelessWidget {
   }
 }
 
-class _TextFieldWidget extends StatelessWidget {
-   const _TextFieldWidget({
+/*class _TextFieldWidget extends StatelessWidget {
+  _TextFieldWidget({
     required this.text,
+    required this.formKey,
+    required this.controller,
     this.input = const <TextInputFormatter>[],
+    this.validatorText,
   });
 
+  final TextEditingController controller;
+  final GlobalKey<FormState> formKey;
   final String text;
   final List<TextInputFormatter> input;
+  final String? Function()? validatorText;
+  String? _currentValidationText;
+
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: formKey,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
@@ -274,12 +281,11 @@ class _TextFieldWidget extends StatelessWidget {
           children: [
             TextFormField(
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
+                _currentValidationText = validatorText?.call();
+                return _currentValidationText;
               },
               inputFormatters: input,
+              controller: controller,
               decoration: InputDecoration(
                 errorStyle: const TextStyle(color: AppColors.red),
                 errorBorder: const OutlineInputBorder(
@@ -294,7 +300,7 @@ class _TextFieldWidget extends StatelessWidget {
                   borderSide: const BorderSide(width: 0, color: AppColors.gray),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                fillColor: AppColors.backgroundColor,
+                fillColor: _currentValidationText != null ? AppColors.red : AppColors.backgroundColor,
                 filled: true,
                 labelText: text,
                 labelStyle: const TextStyle(color: AppColors.gray),
@@ -308,7 +314,85 @@ class _TextFieldWidget extends StatelessWidget {
       ),
     );
   }
+}*/
+
+class _TextFieldWidget extends StatefulWidget {
+  _TextFieldWidget({
+    super.key,
+    required this.text,
+    required this.formKey,
+    required this.controller,
+    this.input = const <TextInputFormatter>[],
+    this.validatorText,
+  });
+
+  final TextEditingController controller;
+  final GlobalKey<FormState> formKey;
+  final String text;
+  final List<TextInputFormatter> input;
+  final String? Function()? validatorText;
+  String? _currentValidationText;
+
+  @override
+  State<_TextFieldWidget> createState() => _TextFieldWidgetState();
 }
+
+class _TextFieldWidgetState extends State<_TextFieldWidget> {
+  _TextFieldWidgetState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: widget.formKey,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            TextFormField(
+              validator: (value) {
+                setState(() {
+                  widget._currentValidationText = widget.validatorText?.call();
+                });
+                return '';
+              },
+              inputFormatters: widget.input,
+              controller: widget.controller,
+              decoration: InputDecoration(
+                errorStyle: const TextStyle(color: AppColors.red),
+                errorBorder:   OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(color: AppColors.red.withOpacity(.15), width: 0),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: const BorderSide(width: 0, color: AppColors.gray),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: const BorderSide(width: 0, color: AppColors.gray),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedErrorBorder: UnderlineInputBorder(
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(color: AppColors.red.withOpacity(.15), width: 0),
+                ),
+                fillColor: widget._currentValidationText != null ? AppColors.red.withOpacity(0.15) : AppColors.backgroundColor,
+                filled: true,
+                labelText: widget.text,
+                labelStyle: const TextStyle(color: AppColors.gray),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 ///function to convert index
 String touristNumberFunction(String touristNumber) {
   switch (touristNumber) {
@@ -369,30 +453,60 @@ class _AddTourist extends StatelessWidget {
                     childrenPadding: EdgeInsets.zero,
                     collapsedShape: const ContinuousRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
                     title: Text('$touristNumber турист', style: AppTextStyle.medium22.value),
-                    children:  <Widget>[
+                    children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: _TextFieldWidget(text: 'Имя'),
+                        child: _TextFieldWidget(
+                          text: 'Имя',
+                          formKey: wm.formComponents[index][0].formKey,
+                          controller: wm.formComponents[index][0].controller,
+                          validatorText: () => wm.validationTextForField(index, 0),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: _TextFieldWidget(text: 'Фамилия'),
+                        child: _TextFieldWidget(
+                          text: 'Фамилия',
+                          formKey: wm.formComponents[index][1].formKey,
+                          controller: wm.formComponents[index][1].controller,
+                          validatorText: () => wm.validationTextForField(index, 1),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: _TextFieldWidget(text: 'Дата рождения'),
+                        child: _TextFieldWidget(
+                          text: 'Дата рождения',
+                          formKey: wm.formComponents[index][2].formKey,
+                          controller: wm.formComponents[index][2].controller,
+                          validatorText: () => wm.validationTextForField(index, 2),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: _TextFieldWidget(text: 'Гражданство'),
+                        child: _TextFieldWidget(
+                          text: 'Гражданство',
+                          formKey: wm.formComponents[index][3].formKey,
+                          controller: wm.formComponents[index][3].controller,
+                          validatorText: () => wm.validationTextForField(index, 3),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: _TextFieldWidget(text: 'Номер загранпаспорта'),
+                        child: _TextFieldWidget(
+                          text: 'Номер загранпаспорта',
+                          formKey: wm.formComponents[index][4].formKey,
+                          controller: wm.formComponents[index][4].controller,
+                          validatorText: () => wm.validationTextForField(index, 4),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: _TextFieldWidget(text: 'Срок действия загранпаспорта'),
+                        child: _TextFieldWidget(
+                          text: 'Срок действия загранпаспорта',
+                          formKey: wm.formComponents[index][5].formKey,
+                          controller: wm.formComponents[index][5].controller,
+                          validatorText: () => wm.validationTextForField(index, 5),
+                        ),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -488,8 +602,8 @@ class _FinalPayment extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 child: AppButtonWidget(
                   title:
-                  'Оплатить ${((wm.booking.tourPrice + wm.booking.fuelCharge + wm.booking.serviceCharge) * tourists.length).toString().spaceSeparateNumbers()}  ₽',
-                  onPressed: wm.openNextScreen,
+                      'Оплатить ${((wm.booking.tourPrice + wm.booking.fuelCharge + wm.booking.serviceCharge) * tourists.length).toString().spaceSeparateNumbers()}  ₽',
+                  onPressed: wm.onPressed,
                 ),
               ),
             ),

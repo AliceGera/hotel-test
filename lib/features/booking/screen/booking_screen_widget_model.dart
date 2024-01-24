@@ -10,7 +10,9 @@ import 'package:provider/provider.dart';
 import 'package:union_state/union_state.dart';
 
 /// Factory for [BookingScreenWidgetModel].
-BookingScreenWidgetModel bookingScreenWidgetModelFactory(BuildContext context,) {
+BookingScreenWidgetModel bookingScreenWidgetModelFactory(
+  BuildContext context,
+) {
   final appScope = context.read<IAppScope>();
   final model = BookingScreenModel(appScope.bookingService);
   return BookingScreenWidgetModel(
@@ -24,17 +26,19 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
   final AppRouter _appRouter;
 
   /// Create an instance [BookingScreenWidgetModel].
-  BookingScreenWidgetModel(super._model,
-      this._appRouter,);
+  BookingScreenWidgetModel(
+    super._model,
+    this._appRouter,
+  );
 
   final _bookingState = UnionStateNotifier<Booking>(Booking.init());
   final _touristsState = ValueNotifier<List<Tourist>>([]);
-   late final Booking booking;
+  late final Booking booking;
 
   final TextEditingController _numberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
-  List<List<TextEditingController>> _controllersList = [];
+  List<List<FormComponents>> _formComponents = [];
 
   @override
   void initWidgetModel() {
@@ -48,13 +52,8 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
     _numberController.dispose();
     _emailController.dispose();
     _numberController.dispose();
-    _controllersList.map((e) => e.map((e) => e.dispose()));
+    _formComponents.map((e) => e.map((e) => e.controller.dispose()));
     super.dispose();
-  }
-
-  @override
-  void openNextScreen() {
-    _appRouter.push(PaidRouter());
   }
 
   @override
@@ -75,23 +74,24 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
 
   void addTourist(int indexOfTourist) {
     model.addTourist();
-    _controllersList.add(
-      [
-        TextEditingController(),
-        TextEditingController(),
-        TextEditingController(),
-        TextEditingController(),
-        TextEditingController(),
-        TextEditingController(),
-      ],
+    _formComponents.add(
+      List.generate(
+        6,
+        (index) => FormComponents.init(),
+      ),
     );
     _getTourists();
-    _controllersList[indexOfTourist].asMap().forEach((indexOfValue, controller) {
-      controller.addListener(() {
+    _formComponents[indexOfTourist].asMap().forEach((indexOfComponent, component) {
+      component.controller.addListener(() {
+        if (_formComponents[indexOfTourist][indexOfComponent].validatorText != null &&
+            _formComponents[indexOfTourist][indexOfComponent].validatorText!.isNotEmpty) {
+          _formComponents[indexOfTourist][indexOfComponent] = component.copyWith(validatorText: null);
+          component.formKey.currentState?.validate();
+        }
         model.setTouristData(
           indexOfTourist,
-          indexOfValue,
-          controller.text,
+          indexOfComponent,
+          component.controller.text,
         );
       });
     });
@@ -117,33 +117,78 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
   }
 
   @override
+  String? validationTextForField(int indexOfTourist, int indexOfValue) {
+    return _formComponents[indexOfTourist][indexOfValue].validatorText;
+  }
+
+  static final RegExp sampleRegex = RegExp(r'(([012][0-9])|(3[01]))\/([0]{0,1}[1-9]|1[012])\/\d{4} ([01][0-9]|[2][0-3]):([01345][0-9])');
+
+  @override
+  void onPressed() {
+    final tourists = model.getTourists();
+    for (var touristIndex = 0; touristIndex < tourists.length; touristIndex++) {
+      _formComponents[touristIndex].asMap().forEach((componentIndex, value) {
+        if (componentIndex == 0 && tourists[touristIndex].name.isEmpty) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
+        }
+        if (componentIndex == 1 && tourists[touristIndex].lastName.isEmpty) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
+        }
+        if (componentIndex == 2 && sampleRegex.hasMatch(tourists[touristIndex].birthday)) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
+        }
+        if (componentIndex == 2 && tourists[touristIndex].birthday.isEmpty) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
+        }
+        if (componentIndex == 3 && tourists[touristIndex].nationality.isEmpty) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
+        }
+        if (componentIndex == 4 && tourists[touristIndex].passportNumber.length != 8) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
+        }
+        if (componentIndex == 4 && tourists[touristIndex].passportNumber.isEmpty) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
+        }
+        if (componentIndex == 5 && sampleRegex.hasMatch(tourists[touristIndex].passportValidity)) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
+        }
+        value.formKey.currentState?.validate();
+      });
+    }
+    final openNextScreen = _formComponents.every((element) => element.every((element) => element.validatorText == null));
+    if (openNextScreen) {
+      _appRouter.push(PaidRouter());
+    }
+  }
+
+  @override
   UnionStateNotifier<Booking> get bookingState => _bookingState;
 
   @override
   ValueNotifier<List<Tourist>> get touristsState => _touristsState;
 
-
-
   @override
-  List<List<TextEditingController>> get controllersList => _controllersList;
+  List<List<FormComponents>> get formComponents => _formComponents;
 }
 
 /// Interface of [BookingScreenWidgetModel].
 abstract class IBookingWidgetModel extends IWidgetModel with ThemeIModelMixin {
-  /// Navigate to room screen.
-  void openNextScreen();
-
   /// Method to close the booking screens.
   void closeScreen() {}
 
   /// Method to load again booking screen.
   void loadAgain() {}
 
+  /// Method to load again booking screen.
+  void onPressed() {}
+
   UnionStateNotifier<Booking> get bookingState;
 
   ValueNotifier<List<Tourist>> get touristsState;
 
-  void changeTouristCard(int index){}
+  void changeTouristCard(int index) {}
 
-  List<List<TextEditingController>> get controllersList;
+  List<List<FormComponents>> get formComponents;
+
+  String? validationTextForField(int indexOfTourist, int indexOfValue);
 }

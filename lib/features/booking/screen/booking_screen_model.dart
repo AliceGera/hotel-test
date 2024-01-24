@@ -1,4 +1,5 @@
 import 'package:elementary/elementary.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_template/features/booking/screen/booking_screen.dart';
 import 'package:flutter_template/features/common/domain/data/booking/booking_data.dart';
 import 'package:flutter_template/features/common/service/booking_service.dart';
@@ -122,5 +123,34 @@ class Tourist {
         nationality: '',
         passportNumber: '',
         passportValidity: '',
+      );
+}
+
+class FormComponents {
+  final TextEditingController controller;
+  final GlobalKey<FormState> formKey;
+  final String? validatorText;
+
+  FormComponents({
+    required this.controller,
+    required this.formKey,
+    this.validatorText,
+  });
+
+  FormComponents copyWith({
+    TextEditingController? controller,
+    GlobalKey<FormState>? formKey,
+    String? validatorText,
+  }) {
+    return FormComponents(
+      controller: controller ?? this.controller,
+      formKey: formKey ?? this.formKey,
+      validatorText: validatorText,
+    );
+  }
+
+  static FormComponents init() => FormComponents(
+        controller: TextEditingController(),
+        formKey: GlobalKey<FormState>(),
       );
 }
