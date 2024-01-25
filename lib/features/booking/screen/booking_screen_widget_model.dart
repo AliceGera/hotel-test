@@ -152,7 +152,11 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
   String? getEmailValidationTex() => _emailValidationText;
 
   ///check for data
-  static final RegExp dataRegex = RegExp(r'(([012][0-9])|(3[01]))\/([0]{0,1}[1-9]|1[012])\/\d{4} ([01][0-9]|[2][0-3]):([01345][0-9])');
+  static final RegExp dataRegex = RegExp(r'^(?:(?:0?[1-9]|[12][0-9]|3[01])(\/|\.)'
+  r'(?:0?[13578]|1[02])|(?:0?[1-9]|[12][0-9]|30)(\/|\.)'
+  r'(?:0?[469]|11)|(?:0?[1-9]|1\d|2[0-8])(\/|\.)02)'
+  r'(\/|\.)((?:19|20)\d{2})$');
+
 
   ///check for email
   static final RegExp emailRegex = RegExp(
@@ -169,11 +173,11 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
         if (componentIndex == 1 && tourists[touristIndex].lastName.isEmpty) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
         }
-        if (componentIndex == 2 && dataRegex.hasMatch(tourists[touristIndex].birthday)) {
-          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
-        }
         if (componentIndex == 2 && tourists[touristIndex].birthday.isEmpty) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
+        }
+        if (componentIndex == 2 && !dataRegex.hasMatch(tourists[touristIndex].birthday)) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
         }
         if (componentIndex == 3 && tourists[touristIndex].nationality.isEmpty) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
@@ -184,7 +188,10 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
         if (componentIndex == 4 && tourists[touristIndex].passportNumber.isEmpty) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
         }
-        if (componentIndex == 5 && dataRegex.hasMatch(tourists[touristIndex].passportValidity)) {
+        if (componentIndex == 5 && tourists[touristIndex].passportValidity.isEmpty) {
+          _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
+        }
+        if (componentIndex == 5 && !dataRegex.hasMatch(tourists[touristIndex].passportValidity)) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
         }
         value.formKey.currentState?.validate();
