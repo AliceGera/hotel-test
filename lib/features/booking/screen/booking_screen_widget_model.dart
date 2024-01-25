@@ -37,11 +37,33 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
 
   final TextEditingController _numberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final GlobalKey<FormState> _formNumberKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formEmailKey = GlobalKey<FormState>();
+  String? _numberValidationText;
+  String? _emailValidationText;
 
-  List<List<FormComponents>> _formComponents = [];
+  final List<List<FormComponents>> _formComponents = [];
 
   @override
   void initWidgetModel() {
+    _numberController.addListener(
+      () {
+        if (_numberValidationText != null && _numberValidationText!.isNotEmpty) {
+          _numberValidationText = null;
+          _formNumberKey.currentState?.validate();
+        }
+        model.number = _numberController.text;
+      },
+    );
+    _emailController.addListener(
+      () {
+        if (_emailValidationText != null && _emailValidationText!.isNotEmpty) {
+          _emailValidationText = null;
+          _formEmailKey.currentState?.validate();
+        }
+        model.email = _emailController.text;
+      },
+    );
     _getBooking();
     addTourist(0);
     super.initWidgetModel();
@@ -51,7 +73,6 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
   void dispose() {
     _numberController.dispose();
     _emailController.dispose();
-    _numberController.dispose();
     _formComponents.map((e) => e.map((e) => e.controller.dispose()));
     super.dispose();
   }
@@ -72,6 +93,7 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
     }
   }
 
+  ///метод добавления туриста
   void addTourist(int indexOfTourist) {
     model.addTourist();
     _formComponents.add(
@@ -99,8 +121,9 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
 
   void _getTourists() {
     final tourists = model.getTourists();
-    _touristsState.value = tourists;
-    _touristsState.notifyListeners();
+    _touristsState
+      ..value = tourists
+      ..notifyListeners();
   }
 
   @override
@@ -112,8 +135,9 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
   void changeTouristCard(int index) {
     final tourists = model.getTourists();
     tourists[index] = tourists[index].copyWith(isExpandTouristCard: !tourists[index].isExpandTouristCard);
-    _touristsState.value = tourists;
-    _touristsState.notifyListeners();
+    _touristsState
+      ..value = tourists
+      ..notifyListeners();
   }
 
   @override
@@ -121,7 +145,18 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
     return _formComponents[indexOfTourist][indexOfValue].validatorText;
   }
 
-  static final RegExp sampleRegex = RegExp(r'(([012][0-9])|(3[01]))\/([0]{0,1}[1-9]|1[012])\/\d{4} ([01][0-9]|[2][0-3]):([01345][0-9])');
+  @override
+  String? getNumberValidationTex() => _numberValidationText;
+
+  @override
+  String? getEmailValidationTex() => _emailValidationText;
+
+  ///check for data
+  static final RegExp dataRegex = RegExp(r'(([012][0-9])|(3[01]))\/([0]{0,1}[1-9]|1[012])\/\d{4} ([01][0-9]|[2][0-3]):([01345][0-9])');
+
+  ///check for email
+  static final RegExp emailRegex = RegExp(
+      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
 
   @override
   void onPressed() {
@@ -134,7 +169,7 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
         if (componentIndex == 1 && tourists[touristIndex].lastName.isEmpty) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
         }
-        if (componentIndex == 2 && sampleRegex.hasMatch(tourists[touristIndex].birthday)) {
+        if (componentIndex == 2 && dataRegex.hasMatch(tourists[touristIndex].birthday)) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
         }
         if (componentIndex == 2 && tourists[touristIndex].birthday.isEmpty) {
@@ -149,13 +184,30 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
         if (componentIndex == 4 && tourists[touristIndex].passportNumber.isEmpty) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'заполните поле');
         }
-        if (componentIndex == 5 && sampleRegex.hasMatch(tourists[touristIndex].passportValidity)) {
+        if (componentIndex == 5 && dataRegex.hasMatch(tourists[touristIndex].passportValidity)) {
           _formComponents[touristIndex][componentIndex] = _formComponents[touristIndex][componentIndex].copyWith(validatorText: 'неверный формат');
         }
         value.formKey.currentState?.validate();
       });
     }
-    final openNextScreen = _formComponents.every((element) => element.every((element) => element.validatorText == null));
+    final isNumberCorrect = _numberController.text.isNotEmpty;
+    if (!isNumberCorrect) {
+      _numberValidationText = 'error';
+      _formNumberKey.currentState?.validate();
+    }
+    final isEmailCorrect = _emailController.text.isNotEmpty;
+    if (!isEmailCorrect) {
+      _emailValidationText = 'error';
+      _formEmailKey.currentState?.validate();
+    }
+    final isEmailCorrectWrite = emailRegex.hasMatch(_emailController.text);
+    if (!isEmailCorrectWrite) {
+      _emailValidationText = 'error';
+      _formEmailKey.currentState?.validate();
+    }
+
+    final openNextScreen = _formComponents.every((element) => element.every((element) => element.validatorText == null)) && isNumberCorrect && isEmailCorrect &&
+    isEmailCorrectWrite ;
     if (openNextScreen) {
       _appRouter.push(PaidRouter());
     }
@@ -169,6 +221,18 @@ class BookingScreenWidgetModel extends WidgetModel<BookingScreen, BookingScreenM
 
   @override
   List<List<FormComponents>> get formComponents => _formComponents;
+
+  @override
+  TextEditingController get numberController => _numberController;
+
+  @override
+  TextEditingController get emailController => _emailController;
+
+  @override
+  GlobalKey<FormState> get formNumberKey => _formNumberKey;
+
+  @override
+  GlobalKey<FormState> get formEmailKey => _formEmailKey;
 }
 
 /// Interface of [BookingScreenWidgetModel].
@@ -182,13 +246,35 @@ abstract class IBookingWidgetModel extends IWidgetModel with ThemeIModelMixin {
   /// Method to load again booking screen.
   void onPressed() {}
 
+  /// Method to get booking screen.
   UnionStateNotifier<Booking> get bookingState;
 
+  /// Method to get tourists screen.
   ValueNotifier<List<Tourist>> get touristsState;
 
+  /// Method to change tourist сard.
   void changeTouristCard(int index) {}
 
+  /// Method give formComponents.
   List<List<FormComponents>> get formComponents;
 
   String? validationTextForField(int indexOfTourist, int indexOfValue);
+
+  /// Method get number controller for number field
+  TextEditingController get numberController;
+
+  /// Method get email controller for email field
+  TextEditingController get emailController;
+
+  /// Method get formKey for number field
+  GlobalKey<FormState> get formNumberKey;
+
+  /// Method get formKey for email field
+  GlobalKey<FormState> get formEmailKey;
+
+  /// Method get validation text for number field
+  String? getNumberValidationTex();
+
+  /// Method get validation text for email field
+  String? getEmailValidationTex();
 }

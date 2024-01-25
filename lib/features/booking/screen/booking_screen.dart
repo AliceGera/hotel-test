@@ -76,7 +76,7 @@ class _Body extends StatelessWidget {
                 const SizedBox(height: 8),
                 _BookingInformationWidget(booking: booking),
                 const SizedBox(height: 8),
-                _BuyerInformationWidget(),
+                _BuyerInformationWidget(wm: wm),
                 const SizedBox(height: 8),
                 _AddTourist(wm: wm),
                 const SizedBox(height: 8),
@@ -85,7 +85,7 @@ class _Body extends StatelessWidget {
             ),
           );
         },
-        loadingBuilder: (_, booking) => const BookingWidget(),
+        loadingBuilder: (_, booking) => const BookingLoadingWidget(),
         failureBuilder: (_, booking, rooms) => AppErrorWidget(onPressed: loadAgain));
   }
 }
@@ -212,6 +212,9 @@ class _BuyerInformationWidget extends StatelessWidget {
     mask: '+7 (###) ###-##-##',
     filter: {'#': RegExp('[0-9]')},
   );
+  final BookingScreenWidgetModel wm;
+
+  _BuyerInformationWidget({required this.wm});
 
   @override
   Widget build(BuildContext context) {
@@ -237,9 +240,20 @@ class _BuyerInformationWidget extends StatelessWidget {
                   style: AppTextStyle.medium22.value,
                 ),
               ),
-              //_TextFieldWidget(text: '+7 (***) ***-**-**', input: [mask]),
+              _TextFieldWidget(
+                text: '+7 (***) ***-**-**',
+                input: [mask],
+                controller: wm.numberController,
+                formKey: wm.formNumberKey,
+                validatorText: wm.getNumberValidationTex,
+              ),
               const SizedBox(height: 8),
-              // _TextFieldWidget(text: 'examplemail.000@mail.ru'),
+              _TextFieldWidget(
+                text: 'examplemail.000@mail.ru',
+                controller: wm.emailController,
+                formKey: wm.formEmailKey,
+                validatorText: wm.getEmailValidationTex,
+              ),
               const SizedBox(height: 8),
               Text(
                 'Эти данные никому не передаются. После оплаты мы вышли чек на указанный вами номер и почту',
@@ -253,72 +267,8 @@ class _BuyerInformationWidget extends StatelessWidget {
   }
 }
 
-/*class _TextFieldWidget extends StatelessWidget {
-  _TextFieldWidget({
-    required this.text,
-    required this.formKey,
-    required this.controller,
-    this.input = const <TextInputFormatter>[],
-    this.validatorText,
-  });
-
-  final TextEditingController controller;
-  final GlobalKey<FormState> formKey;
-  final String text;
-  final List<TextInputFormatter> input;
-  final String? Function()? validatorText;
-  String? _currentValidationText;
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            TextFormField(
-              validator: (value) {
-                _currentValidationText = validatorText?.call();
-                return _currentValidationText;
-              },
-              inputFormatters: input,
-              controller: controller,
-              decoration: InputDecoration(
-                errorStyle: const TextStyle(color: AppColors.red),
-                errorBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                  borderSide: BorderSide(color: AppColors.red, width: 0),
-                ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: const BorderSide(width: 0, color: AppColors.gray),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: const BorderSide(width: 0, color: AppColors.gray),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                fillColor: _currentValidationText != null ? AppColors.red : AppColors.backgroundColor,
-                filled: true,
-                labelText: text,
-                labelStyle: const TextStyle(color: AppColors.gray),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                alignLabelWithHint: true,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/
-
 class _TextFieldWidget extends StatefulWidget {
   _TextFieldWidget({
-    super.key,
     required this.text,
     required this.formKey,
     required this.controller,
@@ -361,7 +311,7 @@ class _TextFieldWidgetState extends State<_TextFieldWidget> {
               controller: widget.controller,
               decoration: InputDecoration(
                 errorStyle: const TextStyle(color: AppColors.red),
-                errorBorder:   OutlineInputBorder(
+                errorBorder: OutlineInputBorder(
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide(color: AppColors.red.withOpacity(.15), width: 0),
                 ),

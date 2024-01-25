@@ -9,6 +9,8 @@ class BookingScreenModel extends ElementaryModel {
   /// Create an instance [BookingScreenModel].
   final BookingService _bookingService;
   final List<Tourist> _tourists = [];
+  String _email = '';
+  String _number = '';
 
   /// Create an instance [BookingScreenModel].
   BookingScreenModel(this._bookingService) : super();
@@ -20,6 +22,18 @@ class BookingScreenModel extends ElementaryModel {
     } on Object {
       rethrow;
     }
+  }
+
+  String get email => _email;
+
+  set email(String newEmail) {
+    _email = newEmail;
+  }
+
+  String get number => _number;
+
+  set number(String newNumber) {
+    _number = newNumber;
   }
 
   List<Tourist> getTourists() {
@@ -42,6 +56,7 @@ class BookingScreenModel extends ElementaryModel {
   }
 }
 
+///model for form tourist
 class Tourist {
   final String name;
   final String lastName;
@@ -51,6 +66,7 @@ class Tourist {
   final String passportValidity;
   final bool isExpandTouristCard;
 
+  ///Tourist constructor
   Tourist({
     required this.name,
     required this.lastName,
@@ -126,11 +142,13 @@ class Tourist {
       );
 }
 
+///model for form components
 class FormComponents {
   final TextEditingController controller;
   final GlobalKey<FormState> formKey;
   final String? validatorText;
 
+  ///FormComponents constructor
   FormComponents({
     required this.controller,
     required this.formKey,

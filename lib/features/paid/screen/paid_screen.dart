@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,6 @@ import 'package:flutter_template/assets/text/text_style.dart';
 import 'package:flutter_template/features/common/widgets/app_button_widget.dart';
 import 'package:flutter_template/features/navigation/domain/entity/app_route_names.dart';
 import 'package:flutter_template/features/paid/screen/paid_screen_widget_model.dart';
-
 /// Main widget for PaidScreen feature.
 @RoutePage(
   name: AppRouteNames.paidScreen,
@@ -51,6 +52,7 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var rng = Random();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -64,10 +66,12 @@ class _Body extends StatelessWidget {
             child: Text('Ваш заказ принят в работу', style: AppTextStyle.medium18.value),
           ),
           Text(
-            'Подтверждение заказа №104893 может занять некоторое время (от 1 часа до суток). Как только мы получим ответ от туроператора, вам на почту придет уведомление.',
+            'Подтверждение заказа №${rng.nextInt(100)} может занять некоторое время (от 1 часа до суток). Как только мы получим ответ от туроператора, вам на'
+                ' почту придет уведомление.',
             style: AppTextStyle.medium18.value.copyWith(color: AppColors.gray),
             textAlign: TextAlign.center,
           ),
+
           const Spacer(),
           Padding(
             padding: const EdgeInsets.only(bottom: 16),

@@ -5,11 +5,11 @@ import 'package:shimmer/shimmer.dart';
 /// {@template loading_booking_widget.class}
 /// Виджет, который выводится при загрузке экрана профиля.
 /// {@endtemplate}
-class BookingWidget extends StatelessWidget {
+class BookingLoadingWidget extends StatelessWidget {
   /// Виджет-модель для экрана booking
 
   /// {@macro booking_room_widget.class}
-  const BookingWidget({super.key});
+  const BookingLoadingWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
